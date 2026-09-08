@@ -1,6 +1,6 @@
 {
   "name": "@tctony/build-tools",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Installer and command wrappers for general-purpose build tools integrating depot_tools, gclient, GN, and Ninja",
   "bin": {
     "xw": "./run.js",
