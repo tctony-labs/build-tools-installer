@@ -1,0 +1,47 @@
+{
+  "name": "@tctony/build-tools",
+  "version": "1.0.5",
+  "description": "Installer and command wrappers for general-purpose build tools integrating depot_tools, gclient, GN, and Ninja",
+  "bin": {
+    "xw": "./run.js",
+    "xwgn": "./xwgn.js",
+    "xwnj": "./xwnj.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tctony-labs/build-tools-installer.git"
+  },
+  "keywords": [
+    "build",
+    "tools",
+    "depot_tools",
+    "gclient",
+    "gn",
+    "ninja"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ini": "^3.0.1"
+  },
+  "homepage": "https://github.com/tctony-labs/build-tools-installer#readme",
+  "bugs": {
+    "url": "https://github.com/tctony-labs/build-tools-installer/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "run.js",
+    "xwgn.js",
+    "xwnj.js",
+    "check-install.js",
+    "install-path.js"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
