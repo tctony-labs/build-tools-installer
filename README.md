@@ -56,3 +56,11 @@ npm pack --dry-run
 ```
 
 Tests isolate filesystem changes and mock Git/network installation operations. Actual Windows execution and end-to-end installation from GitHub require separate verification. Publish the build-tools GitHub repository before publishing this installer.
+
+The `ci.yml` workflow runs dependency installation, tests, and an npm packaging check for pull requests and pushes to `main`. It does not publish packages.
+
+## Publishing
+
+The `publish.yml` workflow publishes through npm Trusted Publishing (OIDC) when a tag matching `vX.Y.Z` is pushed. Configure the npm trusted publisher for `tctony-labs/build-tools-installer`, workflow filename `publish.yml`, with direct `npm publish` allowed and no environment name. No npm token secret is required.
+
+Update the version in both `package.json` and `package-lock.json`, commit and push the change, then create and push the matching tag, such as `git tag v1.0.6` followed by `git push origin v1.0.6`. The workflow checks that the tag matches the package version, runs the tests, saves the npm tarball as an Actions artifact, and publishes that same tarball. Packages are published with the `latest` npm tag. Prerelease tags such as `v1.0.6-beta.1` do not trigger publishing. Each release must use an unpublished npm version.

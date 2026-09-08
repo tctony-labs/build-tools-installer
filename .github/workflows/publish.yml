@@ -1,0 +1,74 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+
+      - name: Install npm with OIDC support
+        run: npm install --global npm@11
+
+      - name: Validate release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node <<'NODE'
+          const { version } = require('./package.json');
+          const expected = `v${version}`;
+          if (!/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(process.env.RELEASE_TAG)) {
+            throw new Error(`Tag must have the format vX.Y.Z, got ${process.env.RELEASE_TAG}`);
+          }
+          if (process.env.RELEASE_TAG !== expected) {
+            throw new Error(`Release tag must be ${expected}, got ${process.env.RELEASE_TAG}`);
+          }
+          NODE
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Pack
+        id: pack
+        run: |
+          npm pack --json > "$RUNNER_TEMP/npm-pack.json"
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const [pkg] = JSON.parse(fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'npm-pack.json'), 'utf8'));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `tarball=${pkg.filename}\n`);
+          NODE
+
+      - name: Save package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: ${{ steps.pack.outputs.tarball }}
+          if-no-files-found: error
+
+      - name: Publish with OIDC
+        env:
+          PACKAGE_TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: npm publish "$PACKAGE_TARBALL" --access public --tag latest
